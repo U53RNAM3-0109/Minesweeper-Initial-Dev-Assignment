@@ -46,21 +46,23 @@ namespace Minesweeper_Initial_Dev_Assignment
 
         private void Cell_Click(object sender, MouseEventArgs e)
         {
+            PictureBox cell = sender as PictureBox;
+            int rowNum = tblpnlMineBoard.GetRow(cell);
+            int colNum = tblpnlMineBoard.GetColumn(cell);
+
             // handle click event
             if (e.Button == MouseButtons.Left)
             {
-                PictureBox cell = sender as PictureBox;
                 cell.BackgroundImage = Resources.TILE_CLEAR;
             }
             else if (e.Button == MouseButtons.Right)
             {
-                PictureBox cell = sender as PictureBox;
                 cell.BackgroundImage = Resources.FLAG_RED;
             }
             else if (e.Button == MouseButtons.Middle)
             {
-                PictureBox cell = sender as PictureBox;
                 cell.BackgroundImage = Resources.FLAG_BLUE;
+                MessageBox.Show($"Row: {rowNum}, Col: {colNum}");
             };
         }
     }
