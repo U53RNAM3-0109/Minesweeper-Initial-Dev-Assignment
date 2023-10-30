@@ -14,6 +14,15 @@ namespace Minesweeper_Initial_Dev_Assignment
 {
     public partial class MinesweeperFlags : Form
     {
+        public bool gameOver = false;
+        public Player player1 = new Player("Player 1", Color.Red);
+        public Player player2 = new Player("Player 2", Color.Blue);
+        public int turnPlayer = 0;
+        public List<List<int>> board = new List<List<int>>();
+        public bool boardFilled = false;
+        public int boardRows = 0;
+        public int boardCols = 0;
+
         public MinesweeperFlags()
         {
             InitializeComponent();
@@ -21,12 +30,12 @@ namespace Minesweeper_Initial_Dev_Assignment
 
         private void MinesweeperFlags_Load(object sender, EventArgs e)
         {
-            int rowCount = tblpnlMineBoard.RowCount;
-            int colCount = tblpnlMineBoard.ColumnCount;
+            this.boardRows = tblpnlMineBoard.RowCount;
+            this.boardCols = tblpnlMineBoard.ColumnCount;
 
-            for (int i = 0; i < rowCount; i++)
+            for (int i = 0; i < this.boardRows; i++)
             {
-                for (int j = 0; j < colCount; j++) {
+                for (int j = 0; j < this.boardCols; j++) {
 
                     var cell = new PictureBox();
 
@@ -44,6 +53,16 @@ namespace Minesweeper_Initial_Dev_Assignment
             }
         }
 
+        private List<List<int>> generateMineBoard(int rowCount, int colCount)
+        {
+            List<List<int>> mineBoard = new List<List<int>>();
+
+            //TODO
+            //get all tiles and place randomly
+
+            return mineBoard;
+        }
+
         private void Cell_Click(object sender, MouseEventArgs e)
         {
             PictureBox cell = sender as PictureBox;
@@ -53,7 +72,7 @@ namespace Minesweeper_Initial_Dev_Assignment
             // handle click event
             if (e.Button == MouseButtons.Left)
             {
-                cell.BackgroundImage = Resources.TILE_CLEAR;
+                actionMineClear(cell);
             }
             else if (e.Button == MouseButtons.Right)
             {
@@ -65,5 +84,42 @@ namespace Minesweeper_Initial_Dev_Assignment
                 MessageBox.Show($"Row: {rowNum}, Col: {colNum}");
             };
         }
+
+        private void actionMineClear(PictureBox cell)
+        {   
+            if(boardFilled == false)
+            {
+                this.board = generateMineBoard(this.boardRows, this.boardCols);
+            }
+            switch (turnPlayer) {
+                case 1:
+                    cell.BackgroundImage = Resources.FLAG_RED;
+                    turnPlayer = 2;
+                    break;
+                case 2:
+                    cell.BackgroundImage = Resources.FLAG_BLUE;
+                    turnPlayer = 1;
+                    break;
+                default:
+                    MessageBox.Show("turnPlayer error");
+                    break;
+            }
+
+            
+        }
     }
+    public class Player
+    {
+        public int flags = 0;
+        public bool hasBombed = false;
+        public string name = string.Empty;
+        public Color color = Color.Gray;
+
+        public Player(string name, Color color)
+        {
+            this.name = name;
+            this.color = color;
+        }
+    }
+
 }
