@@ -30,6 +30,7 @@ namespace Minesweeper_Initial_Dev_Assignment
 
         private void MinesweeperFlags_Load(object sender, EventArgs e)
         {
+            //Set up board pictureBoxes
             this.boardRows = tblpnlMineBoard.RowCount;
             this.boardCols = tblpnlMineBoard.ColumnCount;
 
@@ -46,6 +47,7 @@ namespace Minesweeper_Initial_Dev_Assignment
                     cell.BackgroundImageLayout = ImageLayout.Stretch;
                     cell.BackgroundImage = Resources.TILE;
 
+                    //Add mouse event handlers
                     cell.MouseClick += new MouseEventHandler(Cell_Click);
 
                     tblpnlMineBoard.Controls.Add(cell, j, i);
@@ -55,10 +57,12 @@ namespace Minesweeper_Initial_Dev_Assignment
 
         private List<List<int>> generateMineBoard(int mineCount, PictureBox cell = null)
         {
+            //Filling mine board with mines, and creating numbers
             List<List<int>> mineBoard = new List<List<int>>() { };
 
             List<List<int>> cells = new List<List<int>>();
 
+            //Make list of possible cell locations
             for (int i = 0; i < this.boardRows; i++)
             {
                 mineBoard.Add(new List<int>());
