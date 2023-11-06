@@ -17,13 +17,27 @@ namespace Minesweeper_Initial_Dev_Assignment
         public bool gameOver = false;
         public Player player1 = new Player("Player 1", Color.Red, Resources.FLAG_RED);
         public Player player2 = new Player("Player 2", Color.Blue, Resources.FLAG_BLUE);
-        public int turnPlayer = 0;
+        public int turnPlayer = 1;
         public List<List<int>> board = new List<List<int>>();
         public bool boardFilled = false;
-        public int mineCount = 32;
+        public int mineCount = 50;
         public int boardRows = 0;
         public int boardCols = 0;
-        public List<List<int>> clearedCellLocs = new List<List<int>>();
+
+        public Image TILE = Resources.TILE;
+        public Image TILE_CLEAR = Resources.TILE_CLEAR;
+        public Image NUM_1 = Resources.NUM_1;
+        public Image NUM_2 = Resources.NUM_2;
+        public Image NUM_3 = Resources.NUM_3;
+        public Image NUM_4 = Resources.NUM_4;
+        public Image NUM_5 = Resources.NUM_5;
+        public Image NUM_6 = Resources.NUM_6;
+        public Image NUM_7 = Resources.NUM_7;
+        public Image NUM_8 = Resources.NUM_8;
+        public Image FLAG_BLUE = Resources.FLAG_BLUE;
+        public Image FLAG_RED = Resources.FLAG_RED;
+
+
 
         public MinesweeperFlags()
         {
@@ -47,7 +61,7 @@ namespace Minesweeper_Initial_Dev_Assignment
                     cell.Margin = new Padding(0);
 
                     cell.BackgroundImageLayout = ImageLayout.Stretch;
-                    cell.BackgroundImage = Resources.TILE;
+                    cell.BackgroundImage = TILE;
 
                     //Add mouse event handlers
                     cell.MouseClick += new MouseEventHandler(Cell_Click);
@@ -71,8 +85,8 @@ namespace Minesweeper_Initial_Dev_Assignment
 
                 for (int j = 0; j < this.boardCols; j++)
                 {
-                    mineBoard[i][j] = (0);
-                    cells.Append(new List<int>{i, j});
+                    mineBoard[i].Add(0);
+                    cells.Append(new List<int> { });
                 }
             }
 
@@ -82,7 +96,7 @@ namespace Minesweeper_Initial_Dev_Assignment
 
             Random rnd = new Random();
 
-            for (int k=0; k <mineCount; k++)
+            for (int k = 0; k < mineCount; k++)
             {
                 int row = rnd.Next(1, this.boardRows);
                 int col = rnd.Next(1, this.boardCols);
@@ -90,16 +104,16 @@ namespace Minesweeper_Initial_Dev_Assignment
                 mineBoard[row][col] = -1;
 
                 for (int i = -1; i <= 1; i++) {
-                    for (int j = -1; j<= 1; j++)
+                    for (int j = -1; j <= 1; j++)
                     {
                         try
                         {
-                            if (mineBoard[row+i][col+j] != -1) {
-                                mineBoard[row+i][col+j] += 1;
+                            if (mineBoard[row + i][col + j] != -1) {
+                                mineBoard[row + i][col + j] += 1;
                             }
-                            
+
                         }
-                        catch (IndexOutOfRangeException)
+                        catch (ArgumentOutOfRangeException)
                         {
                             break;
                         }
@@ -124,7 +138,7 @@ namespace Minesweeper_Initial_Dev_Assignment
             }
         }
 
-        private void NextPlayer () {
+        private void NextPlayer() {
             switch (turnPlayer)
             {
                 case 1:
@@ -177,31 +191,36 @@ namespace Minesweeper_Initial_Dev_Assignment
             var cellRow = getCellLoc(cell)[0];
             var cellCol = getCellLoc(cell)[1];
 
-            switch (board[cellRow][cellCol]) {
-                case -1:
-                    //MINE
-                    getPlayer(turnPlayer).flags++;
-                    NextPlayer();
-                    break;
-                case 0:
-                    //EMPTY
-                    ClearSurroundings(cell);
-                    clearedCellLocs.Clear();
-                    break;
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                case 5:
-                case 6:
-                case 7:
-                case 8:
-                    //NUMBERS
-                    PlaceNumber(cell, board[cellRow][cellCol]);
-                    break;
-                default:
-                    //UNKOWN
-                    break;
+            if (cell.BackgroundImage == TILE)
+            {
+                switch (board[cellRow][cellCol])
+                {
+                    case -1:
+                        //MINE
+                        getPlayer(turnPlayer).flags++;
+                        cell.BackgroundImage = getPlayer(turnPlayer).flagImage;
+                        NextPlayer();
+                        break;
+                    case 0:
+                        //EMPTY
+                        PlaceNumber(cell, 0);
+                        ClearSurroundings(cell);
+                        break;
+                    case 1:
+                    case 2:
+                    case 3:
+                    case 4:
+                    case 5:
+                    case 6:
+                    case 7:
+                    case 8:
+                        //NUMBERS
+                        PlaceNumber(cell, board[cellRow][cellCol]);
+                        break;
+                    default:
+                        //UNKOWN
+                        break;
+                }
             }
 
 
@@ -211,75 +230,83 @@ namespace Minesweeper_Initial_Dev_Assignment
         {
             var cellRow = getCellLoc(cell)[0];
             var cellCol = getCellLoc(cell)[1];
-
-            switch (board[cellRow][cellCol])
-            {
-                case -1:
-                    //MINE (gets ignored)
-                    break;
-                case 0:
-                    //EMPTY (recursion)
-                    clearedCellLocs.Add(new List<int> { cellRow, cellCol });
-                    cell.BackgroundImage = Resources.TILE_CLEAR;
-                    for (int i = -1; i <= 1; i++)
-                    {
-                        for (int j = -1; j <= 1; j++) {
-                            if (!clearedCellLocs.Contains(new List<int> { cellRow, cellCol }) && CellInBoardRange(cellRow + i, cellCol + j))
+            if (cell.BackgroundImage == TILE) {
+                switch (board[cellRow][cellCol])
+                {
+                    case -1:
+                        //MINE (gets ignored)
+                        break;
+                    case 0:
+                        //EMPTY (recursion)
+                        PlaceNumber(cell, 0);
+                        for (int i = -1; i <= 1; i++)
+                        {
+                            for (int j = -1; j <= 1; j++)
                             {
-                                //Clear surrounding cells
-                                Point coord = new Point(cellRow, cellCol);
-                                var newCell = tblpnlMineBoard.GetChildAtPoint(coord) as PictureBox;
+                                if(CellInBoardRange(cellRow+i, cellCol+j))
+                                {
+                                    //Clear surrounding cells
+                                    Point newCoord = new Point(cellRow+i, cellCol+j);
+                                    var newCell = tblpnlMineBoard.GetChildAtPoint(newCoord) as PictureBox;
 
-                                ClearSurroundings(newCell);
+                                    ClearSurroundings(newCell);
+                                }
+                                
                             }
                         }
-                    }
-                    break;
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                case 5:
-                case 6:
-                case 7:
-                case 8:
-                    //NUMBERS (places number)
-                    PlaceNumber(cell, board[cellRow][cellCol]);
-                    break;
-                default:
-                    //UNKOWN (show error box)
-                    MessageBox.Show("Surroundings clearing error");
-                    break;
+                        break;
+                    case 1:
+                    case 2:
+                    case 3:
+                    case 4:
+                    case 5:
+                    case 6:
+                    case 7:
+                    case 8:
+                        //NUMBERS (places number)
+                        PlaceNumber(cell, board[cellRow][cellCol]);
+                        break;
+                    default:
+                        //UNKOWN (show error box)
+                        MessageBox.Show("Surroundings clearing error");
+                        break;
+                }
             }
         }
+            
+
+            
 
         private void PlaceNumber(PictureBox cell, int number)
         {
             switch(number)
             {
+                case 0:
+                    cell.BackgroundImage = TILE_CLEAR;
+                    break;
                 case 1:
-                    cell.BackgroundImage = Resources.NUM_1;
+                    cell.BackgroundImage = NUM_1;
                     break;
                 case 2:
-                    cell.BackgroundImage = Resources.NUM_2;
+                    cell.BackgroundImage = NUM_2;
                     break;
                 case 3:
-                    cell.BackgroundImage = Resources.NUM_3;
-                    break
+                    cell.BackgroundImage = NUM_3;
+                    break;
                 case 4:
-                    cell.BackgroundImage = Resources.NUM_4;
+                    cell.BackgroundImage = NUM_4;
                     break;
                 case 5:
-                    cell.BackgroundImage = Resources.NUM_5;
+                    cell.BackgroundImage = NUM_5;
                     break;
                 case 6:
-                    cell.BackgroundImage = Resources.NUM_6;
+                    cell.BackgroundImage = NUM_6;
                     break;
-                case 7      
-                    cell.BackgroundImage = Resources.NUM_7;
+                case 7:
+                    cell.BackgroundImage = NUM_7;
                     break;
                 case 8:
-                    cell.BackgroundImage = Resources.NUM_8;
+                    cell.BackgroundImage = NUM_8;
                     break;
                 default:
                     MessageBox.Show("Place number error");
