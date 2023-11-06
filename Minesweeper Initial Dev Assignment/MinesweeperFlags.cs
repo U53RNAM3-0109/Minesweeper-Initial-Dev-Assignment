@@ -21,6 +21,8 @@ namespace Minesweeper_Initial_Dev_Assignment
         public int boardCols = 0;
         public int mineCount = 51;
 
+        public List<List<int>> clearedCells = new List<List<int>>();
+
         //Image Resource variables
         public Image TILE = Resources.TILE;
         public Image TILE_CLEAR = Resources.TILE_CLEAR;
@@ -181,7 +183,7 @@ namespace Minesweeper_Initial_Dev_Assignment
         private List<int> getCellLoc(PictureBox cell) {
             int rowNum = tblpnlMineBoard.GetRow(cell);
             int colNum = tblpnlMineBoard.GetColumn(cell);
-
+            
             return new List<int> { rowNum, colNum };
         }
 
@@ -215,7 +217,8 @@ namespace Minesweeper_Initial_Dev_Assignment
             var cellRow = getCellLoc(cell)[0];
             var cellCol = getCellLoc(cell)[1];
 
-            if (cell.BackgroundImage == TILE)
+
+            if (!IsCleared(cellRow, cellCol))
             {
                 switch (board[cellRow][cellCol])
                 {
@@ -223,11 +226,27 @@ namespace Minesweeper_Initial_Dev_Assignment
                         //MINE
                         getPlayer(turnPlayer).flags++;
                         cell.BackgroundImage = getPlayer(turnPlayer).flagImage;
+                        clearedCells.Add(new List<int> { cellRow, cellCol });
                         break;
                     case 0:
                         //EMPTY
                         PlaceNumber(cell, 0);
-                        ClearSurroundings(cell);
+                        clearedCells.Add(new List<int> { cellRow, cellCol });
+                        for (int i = -1; i <= 1; i++)
+                        {
+                            for (int j = -1; j <= 1; j++)
+                            {
+                                if (CellInBoardRange(cellRow + i, cellCol + j))
+                                {
+                                    //Clear surrounding cells
+                                    Point newCoord = new Point(cellRow + i, cellCol + j);
+                                    var newCell = tblpnlMineBoard.GetChildAtPoint(newCoord) as PictureBox;
+
+                                    ClearSurroundings(newCell, cellRow + i, cellCol + j);
+                                }
+
+                            }
+                        }
                         NextPlayer();
                         break;
                     case 1:
@@ -240,6 +259,7 @@ namespace Minesweeper_Initial_Dev_Assignment
                     case 8:
                         //NUMBERS
                         PlaceNumber(cell, board[cellRow][cellCol]);
+                        clearedCells.Add(new List<int> { cellRow, cellCol });
                         NextPlayer();
                         break;
                     default:
@@ -257,7 +277,7 @@ namespace Minesweeper_Initial_Dev_Assignment
             var cellRow = getCellLoc(cell)[0];
             var cellCol = getCellLoc(cell)[1];
 
-            if (cell.BackgroundImage == TILE)
+            if (!IsCleared(cellRow, cellCol))
             {
                 getPlayer(turnPlayer).hasBombed = true;
                 switch (board[cellRow][cellCol])
@@ -266,11 +286,26 @@ namespace Minesweeper_Initial_Dev_Assignment
                         //MINE
                         getPlayer(turnPlayer).flags++;
                         cell.BackgroundImage = getPlayer(turnPlayer).flagImage;
+                        clearedCells.Add(new List<int> { cellRow, cellCol });
                         break;
                     case 0:
                         //EMPTY
                         PlaceNumber(cell, 0);
-                        ClearSurroundings(cell);
+                        for (int i = -1; i <= 1; i++)
+                        {
+                            for (int j = -1; j <= 1; j++)
+                            {
+                                if (CellInBoardRange(cellRow + i, cellCol + j))
+                                {
+                                    //Clear surrounding cells
+                                    Point newCoord = new Point(cellRow + i, cellCol + j);
+                                    var newCell = tblpnlMineBoard.GetChildAtPoint(newCoord) as PictureBox;
+
+                                    ClearSurroundings(newCell, cellRow + i, cellCol + j);
+                                }
+
+                            }
+                        }
                         break;
                     case 1:
                     case 2:
@@ -282,6 +317,7 @@ namespace Minesweeper_Initial_Dev_Assignment
                     case 8:
                         //NUMBERS
                         PlaceNumber(cell, board[cellRow][cellCol]);
+                        clearedCells.Add(new List<int> { cellRow, cellCol });
                         break;
                     default:
                         //UNKOWN
@@ -294,11 +330,9 @@ namespace Minesweeper_Initial_Dev_Assignment
 
         }
 
-        private void ClearSurroundings(PictureBox cell)
+        private void ClearSurroundings(PictureBox cell, int cellRow, int cellCol)
         {
-            var cellRow = getCellLoc(cell)[0];
-            var cellCol = getCellLoc(cell)[1];
-            if (cell.BackgroundImage == TILE) {
+            if (!IsCleared(cellRow, cellCol)) {
                 switch (board[cellRow][cellCol])
                 {
                     case -1:
@@ -311,13 +345,16 @@ namespace Minesweeper_Initial_Dev_Assignment
                         {
                             for (int j = -1; j <= 1; j++)
                             {
-                                if(CellInBoardRange(cellRow+i, cellCol+j))
+                                if (CellInBoardRange(cellRow+i, cellCol+j) && IsCleared(cellRow + i, cellCol + j) != true)
                                 {
+                                    clearedCells.Add(new List<int> { cellRow + i, cellCol + j });
+
                                     //Clear surrounding cells
                                     Point newCoord = new Point(cellRow+i, cellCol+j);
                                     var newCell = tblpnlMineBoard.GetChildAtPoint(newCoord) as PictureBox;
-
-                                    ClearSurroundings(newCell);
+                                    
+                                    ClearSurroundings(newCell, cellRow + i, cellCol + j);
+                                    
                                 }
                                 
                             }
@@ -333,6 +370,7 @@ namespace Minesweeper_Initial_Dev_Assignment
                     case 8:
                         //NUMBERS (places number)
                         PlaceNumber(cell, board[cellRow][cellCol]);
+                        clearedCells.Add(new List<int> { cellRow, cellCol });
                         break;
                     default:
                         //UNKOWN (show error box)
@@ -390,6 +428,12 @@ namespace Minesweeper_Initial_Dev_Assignment
             {
                 return false;
             };
+        }
+
+        private bool IsCleared(int cellRow, int cellCol)
+        {
+            if (clearedCells.Contains(new List<int> { cellRow, cellCol })) { return true; }
+            return false;
         }
     }
     public class Player
