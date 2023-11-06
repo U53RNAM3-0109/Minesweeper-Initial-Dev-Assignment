@@ -51,12 +51,12 @@ namespace Minesweeper_Initial_Dev_Assignment
         private void MinesweeperFlags_Load(object sender, EventArgs e)
         {
             //Set up board pictureBoxes
-            this.boardRows = tblpnlMineBoard.RowCount;
-            this.boardCols = tblpnlMineBoard.ColumnCount;
+            boardRows = tblpnlMineBoard.RowCount;
+            boardCols = tblpnlMineBoard.ColumnCount;
 
-            for (int i = 0; i < this.boardRows; i++)
+            for (int i = 0; i < boardRows; i++)
             {
-                for (int j = 0; j < this.boardCols; j++) {
+                for (int j = 0; j < boardCols; j++) {
 
                     var cell = new PictureBox();
 
@@ -83,11 +83,11 @@ namespace Minesweeper_Initial_Dev_Assignment
             List<List<int>> cells = new List<List<int>>();
 
             //Make list of possible cell locations
-            for (int i = 0; i < this.boardRows; i++)
+            for (int i = 0; i < boardRows; i++)
             {
                 mineBoard.Add(new List<int>());
 
-                for (int j = 0; j < this.boardCols; j++)
+                for (int j = 0; j < boardCols; j++)
                 {
                     mineBoard[i].Add(0);
                     cells.Append(new List<int> { });
@@ -103,8 +103,8 @@ namespace Minesweeper_Initial_Dev_Assignment
 
             for (int k = 0; k < mineCount; k++)
             {
-                int row = rnd.Next(1, this.boardRows);
-                int col = rnd.Next(1, this.boardCols);
+                int row = rnd.Next(1, boardRows);
+                int col = rnd.Next(1, boardCols);
 
                 //Prevent stacked mines
                 if (mineBoard[row][col] == -1)
@@ -113,29 +113,49 @@ namespace Minesweeper_Initial_Dev_Assignment
                     continue;
                 }
 
-                    mineBoard[row][col] = -1;
+                mineBoard[row][col] = -1;
 
                 //Increment surrounding tiles (for numbers)
                 for (int i = -1; i <= 1; i++) {
                     for (int j = -1; j <= 1; j++)
                     {
                         if (CellInBoardRange(row+i,col+j)) {
-                            mineBoard[row + i][col + j] += 1;
+                            if (mineBoard[row + i][col + j] != -1)
+                            {
+                                mineBoard[row + i][col + j] += 1;
+                            }
                         }
                     }
                 }
             }
 
+            
+            var outputString = "";
+            for(int i = 0; i < mineBoard.Count; i++)
+            {
+                for (int j = 0; j < mineBoard[i].Count; j++)
+                {
+                    outputString+=mineBoard[i][j].ToString() + " ";
+                }
+                outputString += "\n";
+            }
+            Console.WriteLine(outputString);
+            MessageBox.Show(outputString);
+               
+            
+
             boardFilled = true;
             return mineBoard;
         }
 
-        private Player getPlayer(int player) {
+        private Player getPlayer(int player, bool getOpponent=false) {
             switch (player)
             {
                 case 1:
+                    if (getOpponent) { return player2; }
                     return player1;
                 case 2:
+                    if (getOpponent) { return player1; }
                     return player2;
                 default:
                     MessageBox.Show("turnPlayer error");
@@ -176,9 +196,13 @@ namespace Minesweeper_Initial_Dev_Assignment
             {
                 actionMineClear(cell);
             }
-            else if (e.Button == MouseButtons.Right && getPlayer(turnPlayer).canBomb())
+            else if (e.Button == MouseButtons.Right)
             {
                 //BOMB
+                if(getPlayer(turnPlayer).canBomb(getPlayer(turnPlayer, true)))
+                {
+                    actionBomb(cell);
+                }
             }
         }
 
@@ -222,6 +246,49 @@ namespace Minesweeper_Initial_Dev_Assignment
                         //UNKOWN
                         break;
                 }
+            }
+
+
+        }
+
+        private void actionBomb(PictureBox cell)
+        {
+            
+            var cellRow = getCellLoc(cell)[0];
+            var cellCol = getCellLoc(cell)[1];
+
+            if (cell.BackgroundImage == TILE)
+            {
+                getPlayer(turnPlayer).hasBombed = true;
+                switch (board[cellRow][cellCol])
+                {
+                    case -1:
+                        //MINE
+                        getPlayer(turnPlayer).flags++;
+                        cell.BackgroundImage = getPlayer(turnPlayer).flagImage;
+                        break;
+                    case 0:
+                        //EMPTY
+                        PlaceNumber(cell, 0);
+                        ClearSurroundings(cell);
+                        break;
+                    case 1:
+                    case 2:
+                    case 3:
+                    case 4:
+                    case 5:
+                    case 6:
+                    case 7:
+                    case 8:
+                        //NUMBERS
+                        PlaceNumber(cell, board[cellRow][cellCol]);
+                        break;
+                    default:
+                        //UNKOWN
+                        break;
+                }
+
+                NextPlayer();
             }
 
 
@@ -340,9 +407,14 @@ namespace Minesweeper_Initial_Dev_Assignment
             this.flagImage = flagImage;
         }
 
-        public bool canBomb()
+        public bool canBomb(Player opponent)
         {
-            return true;
+            if (!this.hasBombed && this.flags < opponent.flags)
+            {
+                return true;
+            }
+            return false; 
+
         }
     }
 
