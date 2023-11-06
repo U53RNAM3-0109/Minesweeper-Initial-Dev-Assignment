@@ -14,16 +14,14 @@ namespace Minesweeper_Initial_Dev_Assignment
 {
     public partial class MinesweeperFlags : Form
     {
-        public bool gameOver = false;
-        public Player player1 = new Player("Player 1", Color.Red, Resources.FLAG_RED);
-        public Player player2 = new Player("Player 2", Color.Blue, Resources.FLAG_BLUE);
-        public int turnPlayer = 1;
+        //Setup board variables
         public List<List<int>> board = new List<List<int>>();
         public bool boardFilled = false;
-        public int mineCount = 50;
         public int boardRows = 0;
         public int boardCols = 0;
+        public int mineCount = 51;
 
+        //Image Resource variables
         public Image TILE = Resources.TILE;
         public Image TILE_CLEAR = Resources.TILE_CLEAR;
         public Image NUM_1 = Resources.NUM_1;
@@ -34,8 +32,14 @@ namespace Minesweeper_Initial_Dev_Assignment
         public Image NUM_6 = Resources.NUM_6;
         public Image NUM_7 = Resources.NUM_7;
         public Image NUM_8 = Resources.NUM_8;
-        public Image FLAG_BLUE = Resources.FLAG_BLUE;
-        public Image FLAG_RED = Resources.FLAG_RED;
+
+        public static Image FLAG_RED = Resources.FLAG_RED;
+        public static Image FLAG_BLUE = Resources.FLAG_BLUE;
+
+        //Player variables
+        public int turnPlayer = 1;
+        public Player player1 = new Player("Player 1", Color.Red, FLAG_RED);
+        public Player player2 = new Player("Player 2", Color.Blue, FLAG_BLUE);
 
 
 
@@ -88,6 +92,7 @@ namespace Minesweeper_Initial_Dev_Assignment
                     mineBoard[i].Add(0);
                     cells.Append(new List<int> { });
                 }
+                
             }
 
             if (cell != null) {
@@ -101,21 +106,21 @@ namespace Minesweeper_Initial_Dev_Assignment
                 int row = rnd.Next(1, this.boardRows);
                 int col = rnd.Next(1, this.boardCols);
 
-                mineBoard[row][col] = -1;
+                //Prevent stacked mines
+                if (mineBoard[row][col] == -1)
+                {
+                    k--;
+                    continue;
+                }
 
+                    mineBoard[row][col] = -1;
+
+                //Increment surrounding tiles (for numbers)
                 for (int i = -1; i <= 1; i++) {
                     for (int j = -1; j <= 1; j++)
                     {
-                        try
-                        {
-                            if (mineBoard[row + i][col + j] != -1) {
-                                mineBoard[row + i][col + j] += 1;
-                            }
-
-                        }
-                        catch (ArgumentOutOfRangeException)
-                        {
-                            break;
+                        if (CellInBoardRange(row+i,col+j)) {
+                            mineBoard[row + i][col + j] += 1;
                         }
                     }
                 }
@@ -175,11 +180,6 @@ namespace Minesweeper_Initial_Dev_Assignment
             {
                 //BOMB
             }
-            else if (e.Button == MouseButtons.Middle)
-            {
-                cell.BackgroundImage = Resources.FLAG_BLUE;
-                MessageBox.Show($"Row: {rowNum}, Col: {colNum}");
-            };
         }
 
         private void actionMineClear(PictureBox cell)
@@ -199,12 +199,12 @@ namespace Minesweeper_Initial_Dev_Assignment
                         //MINE
                         getPlayer(turnPlayer).flags++;
                         cell.BackgroundImage = getPlayer(turnPlayer).flagImage;
-                        NextPlayer();
                         break;
                     case 0:
                         //EMPTY
                         PlaceNumber(cell, 0);
                         ClearSurroundings(cell);
+                        NextPlayer();
                         break;
                     case 1:
                     case 2:
@@ -216,6 +216,7 @@ namespace Minesweeper_Initial_Dev_Assignment
                     case 8:
                         //NUMBERS
                         PlaceNumber(cell, board[cellRow][cellCol]);
+                        NextPlayer();
                         break;
                     default:
                         //UNKOWN
@@ -315,7 +316,7 @@ namespace Minesweeper_Initial_Dev_Assignment
         }
 
         private bool CellInBoardRange(int row, int col) {
-            if (row >= 0 && col >= 0 && row <= boardRows && col <= boardCols)
+            if (row >= 0 && col >= 0 && row < boardRows && col < boardCols)
             {
                 return true;
             } else

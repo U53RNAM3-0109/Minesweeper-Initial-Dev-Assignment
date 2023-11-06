@@ -116,5 +116,8 @@
   <ItemGroup>
     <None Include="Resources\TILE_CLEAR.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="IMAGES\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
