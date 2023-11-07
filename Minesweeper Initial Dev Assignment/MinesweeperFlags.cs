@@ -77,7 +77,7 @@ namespace Minesweeper_Initial_Dev_Assignment
             }
         }
 
-        private List<List<int>> generateMineBoard(int mineCount, PictureBox cell = null)
+        private List<List<int>> generateMineBoard(int mineCount, int cellRow, int cellCol)
         {
             //Filling mine board with mines, and creating numbers
             List<List<int>> mineBoard = new List<List<int>>() { };
@@ -92,13 +92,11 @@ namespace Minesweeper_Initial_Dev_Assignment
                 for (int j = 0; j < boardCols; j++)
                 {
                     mineBoard[i].Add(0);
-                    cells.Append(new List<int> { });
+
+                    if (i == cellRow && j == cellCol) { continue; }
+                    cells.Append(new List<int> { i, j });
                 }
                 
-            }
-
-            if (cell != null) {
-                cells.Remove(getCellLoc(cell));
             }
 
             Random rnd = new Random();
@@ -210,13 +208,12 @@ namespace Minesweeper_Initial_Dev_Assignment
 
         private void actionMineClear(PictureBox cell)
         {
-            //initialise board (if not already)
-            //passes first tiled clicked to ensure no instant flagging
-            if (boardFilled != true) { board = generateMineBoard(mineCount, cell); }
-
             var cellRow = getCellLoc(cell)[0];
             var cellCol = getCellLoc(cell)[1];
 
+            //initialise board (if not already)
+            //passes first tiled clicked to ensure no instant flagging
+            if (boardFilled != true) { board = generateMineBoard(mineCount, cellRow, cellCol); }
 
             if (!IsCleared(cellRow, cellCol))
             {
@@ -327,16 +324,19 @@ namespace Minesweeper_Initial_Dev_Assignment
                         var newRow = cellRow + i;
                         var newCol = cellCol + j;
 
-                        if (clearedCells.Contains(new List<int> { newRow, newCol }) == true) { continue; }
+                        if (clearedCells.Contains(new List<int> { newRow, newCol })) { continue; }
                         else
-                        {
-                            if (board[newRow][newCol] == 0)
+                        {   if (CellInBoardRange(newRow, newCol))
                             {
-                                clearedCells.Add(new List<int> { newRow, newCol });
-                                PlaceNumber(newRow, newCol, 0)
-                                clearSurroundings(newRow, newCol);
+                                if (board[newRow][newCol] == 0)
+                                {
+                                    clearedCells.Add(new List<int> { newRow, newCol });
+                                    PlaceNumber(newRow, newCol, 0);
+                                    ClearSurroundings(newRow, newCol);
 
-                            } else { PlaceNumber(newRow, newCol, board[newRow][newCol]) }
+                                }
+                                else { PlaceNumber(newRow, newCol, board[newRow][newCol]); }
+                            }
                         }
 
                     }
@@ -349,6 +349,7 @@ namespace Minesweeper_Initial_Dev_Assignment
 
         private void PlaceNumber(int cellRow, int cellCol, int number)
         {
+            Console.WriteLine(cellRow + " " + cellCol);
             var coord = new Point(cellRow, cellCol);
             var cell = tblpnlMineBoard.GetChildAtPoint(coord) as PictureBox;
             switch(number)
