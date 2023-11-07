@@ -230,23 +230,9 @@ namespace Minesweeper_Initial_Dev_Assignment
                         break;
                     case 0:
                         //EMPTY
-                        PlaceNumber(cell, 0);
+                        PlaceNumber(cellRow, cellCol, 0);
                         clearedCells.Add(new List<int> { cellRow, cellCol });
-                        for (int i = -1; i <= 1; i++)
-                        {
-                            for (int j = -1; j <= 1; j++)
-                            {
-                                if (CellInBoardRange(cellRow + i, cellCol + j))
-                                {
-                                    //Clear surrounding cells
-                                    Point newCoord = new Point(cellRow + i, cellCol + j);
-                                    var newCell = tblpnlMineBoard.GetChildAtPoint(newCoord) as PictureBox;
-
-                                    ClearSurroundings(newCell, cellRow + i, cellCol + j);
-                                }
-
-                            }
-                        }
+                        ClearSurroundings(cellRow, cellCol);
                         NextPlayer();
                         break;
                     case 1:
@@ -258,7 +244,7 @@ namespace Minesweeper_Initial_Dev_Assignment
                     case 7:
                     case 8:
                         //NUMBERS
-                        PlaceNumber(cell, board[cellRow][cellCol]);
+                        PlaceNumber(cellRow, cellCol, board[cellRow][cellCol]);
                         clearedCells.Add(new List<int> { cellRow, cellCol });
                         NextPlayer();
                         break;
@@ -267,13 +253,11 @@ namespace Minesweeper_Initial_Dev_Assignment
                         break;
                 }
             }
-
-
         }
 
         private void actionBomb(PictureBox cell)
         {
-            
+            /*
             var cellRow = getCellLoc(cell)[0];
             var cellCol = getCellLoc(cell)[1];
 
@@ -290,7 +274,7 @@ namespace Minesweeper_Initial_Dev_Assignment
                         break;
                     case 0:
                         //EMPTY
-                        PlaceNumber(cell, 0);
+                        PlaceNumber(cellRow, cellCol, 0);
                         for (int i = -1; i <= 1; i++)
                         {
                             for (int j = -1; j <= 1; j++)
@@ -301,9 +285,9 @@ namespace Minesweeper_Initial_Dev_Assignment
                                     Point newCoord = new Point(cellRow + i, cellCol + j);
                                     var newCell = tblpnlMineBoard.GetChildAtPoint(newCoord) as PictureBox;
 
-                                    ClearSurroundings(newCell, cellRow + i, cellCol + j);
+                                    ClearSurroundings(newCeRow,newCol);
                                 }
-
+                                ..
                             }
                         }
                         break;
@@ -316,7 +300,7 @@ namespace Minesweeper_Initial_Dev_Assignment
                     case 7:
                     case 8:
                         //NUMBERS
-                        PlaceNumber(cell, board[cellRow][cellCol]);
+                        PlaceNumber(cellRow, cellCol, board[cellRow][cellCol]);
                         clearedCells.Add(new List<int> { cellRow, cellCol });
                         break;
                     default:
@@ -326,65 +310,47 @@ namespace Minesweeper_Initial_Dev_Assignment
 
                 NextPlayer();
             }
+            */
 
 
         }
 
-        private void ClearSurroundings(PictureBox cell, int cellRow, int cellCol)
+        private void ClearSurroundings(int cellRow, int cellCol)
         {
-            if (!IsCleared(cellRow, cellCol)) {
-                switch (board[cellRow][cellCol])
+            for (int i = -1; i <= 1; i++)
+            {
+                for (int j = -1; j <= 1; j++)
                 {
-                    case -1:
-                        //MINE (gets ignored)
-                        break;
-                    case 0:
-                        //EMPTY (recursion)
-                        PlaceNumber(cell, 0);
-                        for (int i = -1; i <= 1; i++)
-                        {
-                            for (int j = -1; j <= 1; j++)
-                            {
-                                if (CellInBoardRange(cellRow+i, cellCol+j) && IsCleared(cellRow + i, cellCol + j) != true)
-                                {
-                                    clearedCells.Add(new List<int> { cellRow + i, cellCol + j });
+                    if (i == 0 && j == 0) { continue; }
+                    else
+                    {
+                        var newRow = cellRow + i;
+                        var newCol = cellCol + j;
 
-                                    //Clear surrounding cells
-                                    Point newCoord = new Point(cellRow+i, cellCol+j);
-                                    var newCell = tblpnlMineBoard.GetChildAtPoint(newCoord) as PictureBox;
-                                    
-                                    ClearSurroundings(newCell, cellRow + i, cellCol + j);
-                                    
-                                }
-                                
-                            }
+                        if (clearedCells.Contains(new List<int> { newRow, newCol }) == true) { continue; }
+                        else
+                        {
+                            if (board[newRow][newCol] == 0)
+                            {
+                                clearedCells.Add(new List<int> { newRow, newCol });
+                                PlaceNumber(newRow, newCol, 0)
+                                clearSurroundings(newRow, newCol);
+
+                            } else { PlaceNumber(newRow, newCol, board[newRow][newCol]) }
                         }
-                        break;
-                    case 1:
-                    case 2:
-                    case 3:
-                    case 4:
-                    case 5:
-                    case 6:
-                    case 7:
-                    case 8:
-                        //NUMBERS (places number)
-                        PlaceNumber(cell, board[cellRow][cellCol]);
-                        clearedCells.Add(new List<int> { cellRow, cellCol });
-                        break;
-                    default:
-                        //UNKOWN (show error box)
-                        MessageBox.Show("Surroundings clearing error");
-                        break;
+
+                    }
                 }
             }
         }
-            
 
-            
 
-        private void PlaceNumber(PictureBox cell, int number)
+
+
+        private void PlaceNumber(int cellRow, int cellCol, int number)
         {
+            var coord = new Point(cellRow, cellCol);
+            var cell = tblpnlMineBoard.GetChildAtPoint(coord) as PictureBox;
             switch(number)
             {
                 case 0:
@@ -463,3 +429,33 @@ namespace Minesweeper_Initial_Dev_Assignment
     }
 
 }
+
+
+
+
+
+
+
+
+
+/*
+ 
+func mineClearing {
+    if on clear list: ignore click
+    else:
+        if mine: place flag, increment flag counter, add to clear list
+        if number: reveal number, add to clear list, pass turn
+        if 0: call clearSurroundings(cellRow, cellCol), pass turn
+} 
+
+func clearSurroundings(cellRow, cellCol) {
+    place 0
+    add to clear list
+    
+    for surrounding cells:
+        if cell not in clear list:
+            if number: place number, add to clear list
+            if 0: clearSurroundings(cellRow+mod, cellCol+mod)
+}
+
+ */
