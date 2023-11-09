@@ -33,7 +33,12 @@
             this.label2 = new System.Windows.Forms.Label();
             this.lblPlayer1Flags = new System.Windows.Forms.Label();
             this.lblPlayer2Flags = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
+            this.lblMineCount = new System.Windows.Forms.Label();
+            this.lblPlayerTurn = new System.Windows.Forms.Label();
+            this.pctbxPlayer1BombAvailable = new System.Windows.Forms.PictureBox();
+            this.pctbxPlayer2BombAvailable = new System.Windows.Forms.PictureBox();
+            ((System.ComponentModel.ISupportInitialize)(this.pctbxPlayer1BombAvailable)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pctbxPlayer2BombAvailable)).BeginInit();
             this.SuspendLayout();
             // 
             // tblpnlMineBoard
@@ -126,18 +131,49 @@
             this.lblPlayer2Flags.TabIndex = 5;
             this.lblPlayer2Flags.Text = "0";
             // 
-            // label3
+            // lblMineCount
             // 
-            this.label3.AutoSize = true;
-            this.label3.BackColor = System.Drawing.Color.Transparent;
-            this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label3.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.label3.Location = new System.Drawing.Point(99, 313);
-            this.label3.MaximumSize = new System.Drawing.Size(75, 0);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(75, 32);
-            this.label3.TabIndex = 6;
-            this.label3.Text = "51 mines remaining";
+            this.lblMineCount.AutoSize = true;
+            this.lblMineCount.BackColor = System.Drawing.Color.Transparent;
+            this.lblMineCount.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblMineCount.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.lblMineCount.Location = new System.Drawing.Point(99, 313);
+            this.lblMineCount.MaximumSize = new System.Drawing.Size(75, 0);
+            this.lblMineCount.Name = "lblMineCount";
+            this.lblMineCount.Size = new System.Drawing.Size(75, 32);
+            this.lblMineCount.TabIndex = 6;
+            this.lblMineCount.Text = "51 mines remaining";
+            // 
+            // lblPlayerTurn
+            // 
+            this.lblPlayerTurn.AutoSize = true;
+            this.lblPlayerTurn.BackColor = System.Drawing.Color.Transparent;
+            this.lblPlayerTurn.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblPlayerTurn.Location = new System.Drawing.Point(430, 9);
+            this.lblPlayerTurn.Name = "lblPlayerTurn";
+            this.lblPlayerTurn.Size = new System.Drawing.Size(171, 25);
+            this.lblPlayerTurn.TabIndex = 7;
+            this.lblPlayerTurn.Text = "Player 1\'s Turn";
+            // 
+            // pctbxPlayer1BombAvailable
+            // 
+            this.pctbxPlayer1BombAvailable.BackColor = System.Drawing.Color.Transparent;
+            this.pctbxPlayer1BombAvailable.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+            this.pctbxPlayer1BombAvailable.Location = new System.Drawing.Point(84, 245);
+            this.pctbxPlayer1BombAvailable.Name = "pctbxPlayer1BombAvailable";
+            this.pctbxPlayer1BombAvailable.Size = new System.Drawing.Size(43, 43);
+            this.pctbxPlayer1BombAvailable.TabIndex = 8;
+            this.pctbxPlayer1BombAvailable.TabStop = false;
+            // 
+            // pctbxPlayer2BombAvailable
+            // 
+            this.pctbxPlayer2BombAvailable.BackColor = System.Drawing.Color.Transparent;
+            this.pctbxPlayer2BombAvailable.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+            this.pctbxPlayer2BombAvailable.Location = new System.Drawing.Point(84, 373);
+            this.pctbxPlayer2BombAvailable.Name = "pctbxPlayer2BombAvailable";
+            this.pctbxPlayer2BombAvailable.Size = new System.Drawing.Size(43, 43);
+            this.pctbxPlayer2BombAvailable.TabIndex = 9;
+            this.pctbxPlayer2BombAvailable.TabStop = false;
             // 
             // MinesweeperFlags
             // 
@@ -146,7 +182,10 @@
             this.BackgroundImage = global::Minesweeper_Initial_Dev_Assignment.Properties.Resources.BACKGROUND;
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.ClientSize = new System.Drawing.Size(843, 656);
-            this.Controls.Add(this.label3);
+            this.Controls.Add(this.pctbxPlayer2BombAvailable);
+            this.Controls.Add(this.pctbxPlayer1BombAvailable);
+            this.Controls.Add(this.lblPlayerTurn);
+            this.Controls.Add(this.lblMineCount);
             this.Controls.Add(this.lblPlayer2Flags);
             this.Controls.Add(this.lblPlayer1Flags);
             this.Controls.Add(this.label2);
@@ -156,6 +195,8 @@
             this.Name = "MinesweeperFlags";
             this.Text = "Minesweeper Flags";
             this.Load += new System.EventHandler(this.MinesweeperFlags_Load);
+            ((System.ComponentModel.ISupportInitialize)(this.pctbxPlayer1BombAvailable)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pctbxPlayer2BombAvailable)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -168,7 +209,10 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label lblPlayer1Flags;
         private System.Windows.Forms.Label lblPlayer2Flags;
-        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Label lblMineCount;
+        private System.Windows.Forms.Label lblPlayerTurn;
+        private System.Windows.Forms.PictureBox pctbxPlayer1BombAvailable;
+        private System.Windows.Forms.PictureBox pctbxPlayer2BombAvailable;
     }
 }
 

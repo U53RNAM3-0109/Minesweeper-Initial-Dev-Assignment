@@ -38,6 +38,8 @@ namespace Minesweeper_Initial_Dev_Assignment
         public static Image FLAG_RED = Resources.FLAG_RED;
         public static Image FLAG_BLUE = Resources.FLAG_BLUE;
 
+        public Image BOMB = Resources.BOMB;
+
         //Player variables
         public int turnPlayer = 1;
         public Player player1 = new Player("Player 1", Color.Red, FLAG_RED);
@@ -52,14 +54,15 @@ namespace Minesweeper_Initial_Dev_Assignment
 
         private void MinesweeperFlags_Load(object sender, EventArgs e)
         {
-            //Set up board pictureBoxes
+            //Sets some variables
             boardRows = tblpnlMineBoard.RowCount;
             boardCols = tblpnlMineBoard.ColumnCount;
 
+            //Loop through board and place images
             for (int i = 0; i < boardRows; i++)
             {
                 for (int j = 0; j < boardCols; j++) {
-
+                    //Sets up pictureboxes
                     var cell = new PictureBox();
 
                     cell.Dock = DockStyle.Top;
@@ -72,6 +75,7 @@ namespace Minesweeper_Initial_Dev_Assignment
                     //Add mouse event handlers
                     cell.MouseClick += new MouseEventHandler(Cell_Click);
 
+                    //Place image at coord
                     tblpnlMineBoard.Controls.Add(cell, j, i);
                 }
             }
@@ -93,12 +97,14 @@ namespace Minesweeper_Initial_Dev_Assignment
                 {
                     mineBoard[i].Add(0);
 
+                    //Skips first clicked cell
                     if (i == cellRow && j == cellCol) { continue; }
                     cells.Append(new List<int> { i, j });
                 }
                 
             }
 
+            //Setup random
             Random rnd = new Random();
 
             for (int k = 0; k < mineCount; k++)
@@ -129,7 +135,7 @@ namespace Minesweeper_Initial_Dev_Assignment
                 }
             }
 
-            
+            //Write grid for debugging purposes
             var outputString = "";
             for(int i = 0; i < mineBoard.Count; i++)
             {
@@ -140,15 +146,13 @@ namespace Minesweeper_Initial_Dev_Assignment
                 outputString += "\n";
             }
             Console.WriteLine(outputString);
-            MessageBox.Show(outputString);
                
-            
-
             boardFilled = true;
             return mineBoard;
         }
 
         private Player getPlayer(int player, bool getOpponent=false) {
+            //Returns the current turn player object (or opponent if getOpponent is true)
             switch (player)
             {
                 case 1:
@@ -164,6 +168,7 @@ namespace Minesweeper_Initial_Dev_Assignment
         }
 
         private void NextPlayer() {
+            //Switches to the next turn and updates display accordingly
             switch (turnPlayer)
             {
                 case 1:
@@ -176,13 +181,7 @@ namespace Minesweeper_Initial_Dev_Assignment
                     MessageBox.Show("nextPlayer error");
                     break;
             }
-        }
-
-        private List<int> getCellLoc(PictureBox cell) {
-            int rowNum = tblpnlMineBoard.GetRow(cell);
-            int colNum = tblpnlMineBoard.GetColumn(cell);
-            
-            return new List<int> { rowNum, colNum };
+            lblPlayerTurn.Text = $"Player {turnPlayer}'s turn";
         }
 
         private void Cell_Click(object sender, MouseEventArgs e)
@@ -202,14 +201,15 @@ namespace Minesweeper_Initial_Dev_Assignment
                 if(getPlayer(turnPlayer).canBomb(getPlayer(turnPlayer, true)))
                 {
                     actionBomb(cell);
+                    NextPlayer();
                 }
             }
         }
 
         private void actionMineClear(PictureBox cell)
         {
-            var cellRow = getCellLoc(cell)[0];
-            var cellCol = getCellLoc(cell)[1];
+            var cellRow = tblpnlMineBoard.GetRow(cell);
+            var cellCol = tblpnlMineBoard.GetColumn(cell);
 
             //initialise board (if not already)
             //passes first tiled clicked to ensure no instant flagging
@@ -221,9 +221,9 @@ namespace Minesweeper_Initial_Dev_Assignment
                 {
                     case -1:
                         //MINE
-                        getPlayer(turnPlayer).flags++;
+                        IncrementFlags();
                         cell.BackgroundImage = getPlayer(turnPlayer).flagImage;
-                        clearedCells.Add(cellRow * 16 + cellCol);
+                        clearedCells.Add(cellRow * boardCols + cellCol);
                         break;
                     case 0:
                         //EMPTY
@@ -241,7 +241,7 @@ namespace Minesweeper_Initial_Dev_Assignment
                     case 8:
                         //NUMBERS
                         PlaceNumber(cellRow, cellCol, board[cellRow][cellCol]);
-                        clearedCells.Add(cellRow * 16 + cellCol);
+                        clearedCells.Add(cellRow * boardCols + cellCol);
                         NextPlayer();
                         break;
                     default:
@@ -253,62 +253,54 @@ namespace Minesweeper_Initial_Dev_Assignment
 
         private void actionBomb(PictureBox cell)
         {
-            /*
-            var cellRow = getCellLoc(cell)[0];
-            var cellCol = getCellLoc(cell)[1];
+            MessageBox.Show("BOOM!");
+            var cellRow = tblpnlMineBoard.GetRow(cell);
+            var cellCol = tblpnlMineBoard.GetColumn(cell);
 
-            if (!IsCleared(cellRow, cellCol))
+            for (int i = -1; i <= 1; i++)
             {
-                getPlayer(turnPlayer).hasBombed = true;
-                switch (board[cellRow][cellCol])
+                for (int j = -1; j <= 1; j++)
                 {
-                    case -1:
-                        //MINE
-                        getPlayer(turnPlayer).flags++;
-                        cell.BackgroundImage = getPlayer(turnPlayer).flagImage;
-                        clearedCells.Add(new List<int> { cellRow, cellCol });
-                        break;
-                    case 0:
-                        //EMPTY
-                        PlaceNumber(cellRow, cellCol, 0);
-                        for (int i = -1; i <= 1; i++)
-                        {
-                            for (int j = -1; j <= 1; j++)
-                            {
-                                if (CellInBoardRange(cellRow + i, cellCol + j))
-                                {
-                                    //Clear surrounding cells
-                                    Point newCoord = new Point(cellRow + i, cellCol + j);
-                                    var newCell = tblpnlMineBoard.GetChildAtPoint(newCoord) as PictureBox;
+                    var newRow = cellRow + i;
+                    var newCol = cellCol + j;
 
-                                    ClearSurroundings(newCeRow,newCol);
-                                }
-                                ..
+                    if (!IsCellCleared(newRow, newCol))
+                    {
+                        if (CellInBoardRange(newRow, newCol))
+                        {
+                            switch (board[cellRow][cellCol])
+                            {
+                                case -1:
+                                    //MINE
+                                    IncrementFlags();
+                                    cell.BackgroundImage = getPlayer(turnPlayer).flagImage;
+                                    clearedCells.Add(cellRow * boardCols + cellCol);
+                                    break;
+                                case 0:
+                                    //EMPTY
+                                    PlaceNumber(cellRow, cellCol, 0);
+                                    ClearSurroundings(cellRow, cellCol);
+                                    break;
+                                case 1:
+                                case 2:
+                                case 3:
+                                case 4:
+                                case 5:
+                                case 6:
+                                case 7:
+                                case 8:
+                                    //NUMBERS
+                                    PlaceNumber(cellRow, cellCol, board[cellRow][cellCol]);
+                                    clearedCells.Add(cellRow * boardCols + cellCol);
+                                    break;
+                                default:
+                                    //UNKOWN
+                                    break;
                             }
                         }
-                        break;
-                    case 1:
-                    case 2:
-                    case 3:
-                    case 4:
-                    case 5:
-                    case 6:
-                    case 7:
-                    case 8:
-                        //NUMBERS
-                        PlaceNumber(cellRow, cellCol, board[cellRow][cellCol]);
-                        clearedCells.Add(new List<int> { cellRow, cellCol });
-                        break;
-                    default:
-                        //UNKOWN
-                        break;
+                    }
                 }
-
-                NextPlayer();
             }
-            */
-
-
         }
 
         private void ClearSurroundings(int cellRow, int cellCol)
@@ -326,7 +318,7 @@ namespace Minesweeper_Initial_Dev_Assignment
                             Console.WriteLine(board[newRow][newCol]);
                             if (board[newRow][newCol] == 0)
                             {
-                                clearedCells.Add(newRow*16+newCol);
+                                clearedCells.Add(newRow*boardCols +newCol);
                                 PlaceNumber(newRow, newCol, 0);
                                 ClearSurroundings(newRow, newCol);
 
@@ -340,16 +332,43 @@ namespace Minesweeper_Initial_Dev_Assignment
 
         private void IncrementFlags()
         {
+            //Increments flags and updates scoring
             getPlayer(turnPlayer).flags++;
+            if (turnPlayer == 1)
+            {
+                lblPlayer1Flags.Text = Convert.ToString(getPlayer(turnPlayer).flags);
+            } else {
+                lblPlayer2Flags.Text = Convert.ToString(getPlayer(turnPlayer).flags);
+            }
 
+            //Check if current player can bomb and update accordingly
+            if (getPlayer(1).canBomb(getPlayer(2))) {
+                pctbxPlayer1BombAvailable.BackgroundImage = BOMB;
+            } else {
+                pctbxPlayer1BombAvailable.BackgroundImage = null;
+            }
 
+            //Check if enemy can bomb and update accordingly
+            if (getPlayer(2).canBomb(getPlayer(1)))
+            {
+                pctbxPlayer2BombAvailable.BackgroundImage = BOMB;
+            }
+            else
+            {
+                pctbxPlayer2BombAvailable.BackgroundImage = null;
+            }
+
+            mineCount--;
+            lblMineCount.Text = $"{mineCount} mines remaining";
         }
 
 
         private void PlaceNumber(int cellRow, int cellCol, int number)
         {
-            var cell = tblpnlMineBoard.Controls[16*cellRow+cellCol];
-
+            //Get cell index
+            var cell = tblpnlMineBoard.Controls[boardCols*cellRow+cellCol];
+            
+            //Update background image for cell
             switch (number)
             {
                 case 0:
@@ -386,6 +405,7 @@ namespace Minesweeper_Initial_Dev_Assignment
         }
 
         private bool CellInBoardRange(int row, int col) {
+            //Checks whether given coord is in range of the grid
             if (row >= 0 && col >= 0 && row < boardRows && col < boardCols)
             {
                 return true;
@@ -397,7 +417,7 @@ namespace Minesweeper_Initial_Dev_Assignment
 
         private bool IsCellCleared(int cellRow, int cellCol)
         {
-            return clearedCells.Contains(cellRow * 16 + cellCol);
+            return clearedCells.Contains(cellRow * boardCols + cellCol);
         }
     }
     public class Player
@@ -417,7 +437,7 @@ namespace Minesweeper_Initial_Dev_Assignment
 
         public bool canBomb(Player opponent)
         {
-            if (!this.hasBombed && this.flags < opponent.flags)
+            if (!hasBombed && this.flags < opponent.flags)
             {
                 return true;
             }
