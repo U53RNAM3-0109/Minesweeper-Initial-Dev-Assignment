@@ -21,7 +21,7 @@ namespace Minesweeper_Initial_Dev_Assignment
         public int boardCols = 0;
         public int mineCount = 51;
 
-        public List<List<int>> clearedCells = new List<List<int>>();
+        public List<int> clearedCells = new List<int>();
 
         //Image Resource variables
         public Image TILE = Resources.TILE;
@@ -215,7 +215,7 @@ namespace Minesweeper_Initial_Dev_Assignment
             //passes first tiled clicked to ensure no instant flagging
             if (boardFilled != true) { board = generateMineBoard(mineCount, cellRow, cellCol); }
 
-            if (!IsCleared(cellRow, cellCol))
+            if (!IsCellCleared(cellRow, cellCol))
             {
                 switch (board[cellRow][cellCol])
                 {
@@ -223,12 +223,11 @@ namespace Minesweeper_Initial_Dev_Assignment
                         //MINE
                         getPlayer(turnPlayer).flags++;
                         cell.BackgroundImage = getPlayer(turnPlayer).flagImage;
-                        clearedCells.Add(new List<int> { cellRow, cellCol });
+                        clearedCells.Add(cellRow * 16 + cellCol);
                         break;
                     case 0:
                         //EMPTY
                         PlaceNumber(cellRow, cellCol, 0);
-                        clearedCells.Add(new List<int> { cellRow, cellCol });
                         ClearSurroundings(cellRow, cellCol);
                         NextPlayer();
                         break;
@@ -242,7 +241,7 @@ namespace Minesweeper_Initial_Dev_Assignment
                     case 8:
                         //NUMBERS
                         PlaceNumber(cellRow, cellCol, board[cellRow][cellCol]);
-                        clearedCells.Add(new List<int> { cellRow, cellCol });
+                        clearedCells.Add(cellRow * 16 + cellCol);
                         NextPlayer();
                         break;
                     default:
@@ -318,41 +317,40 @@ namespace Minesweeper_Initial_Dev_Assignment
             {
                 for (int j = -1; j <= 1; j++)
                 {
-                    if (i == 0 && j == 0) { continue; }
-                    else
-                    {
-                        var newRow = cellRow + i;
-                        var newCol = cellCol + j;
+                    var newRow = cellRow + i;
+                    var newCol = cellCol + j;
 
-                        if (clearedCells.Contains(new List<int> { newRow, newCol })) { continue; }
-                        else
-                        {   if (CellInBoardRange(newRow, newCol))
+                    if (!IsCellCleared(newRow, newCol))
+                    {   if (CellInBoardRange(newRow, newCol))
+                        { 
+                            Console.WriteLine(board[newRow][newCol]);
+                            if (board[newRow][newCol] == 0)
                             {
-                                if (board[newRow][newCol] == 0)
-                                {
-                                    clearedCells.Add(new List<int> { newRow, newCol });
-                                    PlaceNumber(newRow, newCol, 0);
-                                    ClearSurroundings(newRow, newCol);
+                                clearedCells.Add(newRow*16+newCol);
+                                PlaceNumber(newRow, newCol, 0);
+                                ClearSurroundings(newRow, newCol);
 
-                                }
-                                else { PlaceNumber(newRow, newCol, board[newRow][newCol]); }
                             }
+                            else { PlaceNumber(newRow, newCol, board[newRow][newCol]); }
                         }
-
                     }
                 }
             }
         }
 
+        private void IncrementFlags()
+        {
+            getPlayer(turnPlayer).flags++;
 
+
+        }
 
 
         private void PlaceNumber(int cellRow, int cellCol, int number)
         {
-            Console.WriteLine(cellRow + " " + cellCol);
-            var coord = new Point(cellRow, cellCol);
-            var cell = tblpnlMineBoard.GetChildAtPoint(coord) as PictureBox;
-            switch(number)
+            var cell = tblpnlMineBoard.Controls[16*cellRow+cellCol];
+
+            switch (number)
             {
                 case 0:
                     cell.BackgroundImage = TILE_CLEAR;
@@ -397,15 +395,14 @@ namespace Minesweeper_Initial_Dev_Assignment
             };
         }
 
-        private bool IsCleared(int cellRow, int cellCol)
+        private bool IsCellCleared(int cellRow, int cellCol)
         {
-            if (clearedCells.Contains(new List<int> { cellRow, cellCol })) { return true; }
-            return false;
+            return clearedCells.Contains(cellRow * 16 + cellCol);
         }
     }
     public class Player
     {
-        public int flags = 0;
+        public int flags;
         public bool hasBombed = false;
         public string name = string.Empty;
         public Color color = Color.Gray;
@@ -425,7 +422,6 @@ namespace Minesweeper_Initial_Dev_Assignment
                 return true;
             }
             return false; 
-
         }
     }
 
