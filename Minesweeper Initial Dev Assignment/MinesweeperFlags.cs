@@ -118,9 +118,25 @@ namespace Minesweeper_Initial_Dev_Assignment
 
         public bool CheckForWin() {
             if(player1.flags > player2.flags)
-            { var leadingPlayer = player1 as Player; }
+            { 
+                var leadingPlayer = player1 as Player;
+                var difference = player1.flags - player2.flags;
+                if (mineCount < difference + 1)
+                {
+                    return true;
+                }
+            }
             else
-            { var leadingPlayer = player2 as Player; }
+            { 
+                var leadingPlayer = player2 as Player;
+                var difference = player2.flags - player1.flags;
+                if (mineCount < difference + 1)
+                {
+                    return true;
+                }
+            }
+            
+            return false;
 
 
 
