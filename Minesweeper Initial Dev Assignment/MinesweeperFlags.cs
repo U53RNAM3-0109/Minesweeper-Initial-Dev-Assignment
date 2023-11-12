@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Header;
 
 namespace Minesweeper_Initial_Dev_Assignment
 {
@@ -22,6 +23,8 @@ namespace Minesweeper_Initial_Dev_Assignment
         public int mineCount = 51;
 
         public List<int> clearedCells = new List<int>();
+
+        public int timeLeft = 60;
 
         //Image Resource variables
         public Image TILE = Resources.TILE;
@@ -50,6 +53,11 @@ namespace Minesweeper_Initial_Dev_Assignment
         public MinesweeperFlags()
         {
             InitializeComponent();
+
+            tmrTurnTimer.Interval = 1000;
+
+            timeLeft = 30;
+            tmrTurnTimer.Tick += Timer_Tick;
         }
 
         private void MinesweeperFlags_Load(object sender, EventArgs e)
@@ -80,6 +88,94 @@ namespace Minesweeper_Initial_Dev_Assignment
                 }
             }
         }
+
+        private void MinesweeperFlags_Shown(Object sender, EventArgs e)
+        {
+            MessageBox.Show("Welcome to Minesweeper Flags! This is a two-player minesweeper game, where you take turns to clear the board and place flags. Whoever marks the most mines wins!");
+            MessageBox.Show("If you have less flags than your opponent, you can use the one-time only \"Bomb\" action, to automatically clear a 3x3 area.");
+            MessageBox.Show("Your turn ends when you Bomb an area, clear a non-mine space, or run out of time! You have 30 seconds per turn.");
+            MessageBox.Show("Controls:\nLeft mouse button - Uncover a tile/Flag a mine\nRight mouse button - Use the Bomb action");
+            tmrTurnTimer.Start();
+        }
+
+        public void Timer_Tick(object sender, EventArgs e)
+        {
+            timeLeft--;
+            lblTurnTimeDisplay.Text = "(" + timeLeft + ")";
+
+            if (timeLeft <= 0)
+            {
+                tmrTurnTimer.Stop();
+                NextPlayer();
+            }
+        }
+
+        public void ResetTimer()
+        {
+            timeLeft = 30;
+            tmrTurnTimer.Start();
+        }
+
+        public bool CheckForWin() {
+            if(player1.flags > player2.flags)
+            { var leadingPlayer = player1 as Player; }
+            else
+            { var leadingPlayer = player2 as Player; }
+
+
+
+        }
+        
+        private void EndGame()
+        {
+            tmrTurnTimer.Stop();
+            if (player1.flags > player2.flags)
+            {
+                MessageBox.Show($"Player 1 wins!\nScore was {player1.flags}-{player2.flags}");
+            }
+            else { MessageBox.Show($"Player 2 wins!\nScore was {player1.flags}-{player2.flags}"); }
+            Application.Exit();
+
+        }
+
+        private void IncrementFlags()
+        {
+            //Increments flags and updates scoring
+            getPlayer(turnPlayer).flags++;
+            if (turnPlayer == 1)
+            {
+                lblPlayer1Flags.Text = Convert.ToString(getPlayer(turnPlayer).flags);
+            }
+            else
+            {
+                lblPlayer2Flags.Text = Convert.ToString(getPlayer(turnPlayer).flags);
+            }
+
+            //Check if current player can bomb and update accordingly
+            if (getPlayer(1).canBomb(getPlayer(2)))
+            {
+                pctbxPlayer1BombAvailable.BackgroundImage = BOMB;
+            }
+            else
+            {
+                pctbxPlayer1BombAvailable.BackgroundImage = null;
+            }
+
+            //Check if enemy can bomb and update accordingly
+            if (getPlayer(2).canBomb(getPlayer(1)))
+            {
+                pctbxPlayer2BombAvailable.BackgroundImage = BOMB;
+            }
+            else
+            {
+                pctbxPlayer2BombAvailable.BackgroundImage = null;
+            }
+
+            mineCount--;
+            lblMineCount.Text = $"{mineCount} mines remaining";
+            if (CheckForWin()) { EndGame(); }
+        }
+
 
         private List<List<int>> generateMineBoard(int mineCount, int cellRow, int cellCol)
         {
@@ -182,6 +278,10 @@ namespace Minesweeper_Initial_Dev_Assignment
                     break;
             }
             lblPlayerTurn.Text = $"Player {turnPlayer}'s turn";
+            tmrTurnTimer.Stop();
+            MessageBox.Show($"Player {turnPlayer}'s turn");
+            ResetTimer();
+            
         }
 
         private void Cell_Click(object sender, MouseEventArgs e)
@@ -201,6 +301,7 @@ namespace Minesweeper_Initial_Dev_Assignment
                 if(getPlayer(turnPlayer).canBomb(getPlayer(turnPlayer, true)))
                 {
                     actionBomb(cell);
+                    getPlayer(turnPlayer).hasBombed = true;
                     NextPlayer();
                 }
             }
@@ -263,23 +364,27 @@ namespace Minesweeper_Initial_Dev_Assignment
                 {
                     var newRow = cellRow + i;
                     var newCol = cellCol + j;
-
+                    Console.WriteLine($"{i}, {j}");
                     if (!IsCellCleared(newRow, newCol))
                     {
+                        Console.WriteLine($"Cell not cleared");
                         if (CellInBoardRange(newRow, newCol))
                         {
-                            switch (board[cellRow][cellCol])
+                            Console.WriteLine("Cell in range");
+                            Console.WriteLine("Cell is:"+board[cellRow][newCol]);
+                            switch (board[newRow][newCol])
                             {
                                 case -1:
                                     //MINE
                                     IncrementFlags();
+                                    cell = tblpnlMineBoard.Controls[boardCols * newRow + newCol] as PictureBox;
                                     cell.BackgroundImage = getPlayer(turnPlayer).flagImage;
-                                    clearedCells.Add(cellRow * boardCols + cellCol);
+                                    clearedCells.Add(newRow * boardCols + newCol);
                                     break;
                                 case 0:
                                     //EMPTY
-                                    PlaceNumber(cellRow, cellCol, 0);
-                                    ClearSurroundings(cellRow, cellCol);
+                                    PlaceNumber(newRow, newCol, 0);
+                                    ClearSurroundings(newRow, newCol);
                                     break;
                                 case 1:
                                 case 2:
@@ -290,8 +395,8 @@ namespace Minesweeper_Initial_Dev_Assignment
                                 case 7:
                                 case 8:
                                     //NUMBERS
-                                    PlaceNumber(cellRow, cellCol, board[cellRow][cellCol]);
-                                    clearedCells.Add(cellRow * boardCols + cellCol);
+                                    PlaceNumber(newRow, newCol, board[newRow][newCol]);
+                                    clearedCells.Add(newRow * boardCols + newCol);
                                     break;
                                 default:
                                     //UNKOWN
@@ -330,37 +435,7 @@ namespace Minesweeper_Initial_Dev_Assignment
             }
         }
 
-        private void IncrementFlags()
-        {
-            //Increments flags and updates scoring
-            getPlayer(turnPlayer).flags++;
-            if (turnPlayer == 1)
-            {
-                lblPlayer1Flags.Text = Convert.ToString(getPlayer(turnPlayer).flags);
-            } else {
-                lblPlayer2Flags.Text = Convert.ToString(getPlayer(turnPlayer).flags);
-            }
-
-            //Check if current player can bomb and update accordingly
-            if (getPlayer(1).canBomb(getPlayer(2))) {
-                pctbxPlayer1BombAvailable.BackgroundImage = BOMB;
-            } else {
-                pctbxPlayer1BombAvailable.BackgroundImage = null;
-            }
-
-            //Check if enemy can bomb and update accordingly
-            if (getPlayer(2).canBomb(getPlayer(1)))
-            {
-                pctbxPlayer2BombAvailable.BackgroundImage = BOMB;
-            }
-            else
-            {
-                pctbxPlayer2BombAvailable.BackgroundImage = null;
-            }
-
-            mineCount--;
-            lblMineCount.Text = $"{mineCount} mines remaining";
-        }
+        
 
 
         private void PlaceNumber(int cellRow, int cellCol, int number)

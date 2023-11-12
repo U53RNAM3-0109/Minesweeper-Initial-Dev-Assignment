@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.tblpnlMineBoard = new System.Windows.Forms.TableLayoutPanel();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
@@ -37,6 +38,8 @@
             this.lblPlayerTurn = new System.Windows.Forms.Label();
             this.pctbxPlayer1BombAvailable = new System.Windows.Forms.PictureBox();
             this.pctbxPlayer2BombAvailable = new System.Windows.Forms.PictureBox();
+            this.tmrTurnTimer = new System.Windows.Forms.Timer(this.components);
+            this.lblTurnTimeDisplay = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pctbxPlayer1BombAvailable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pctbxPlayer2BombAvailable)).BeginInit();
             this.SuspendLayout();
@@ -175,6 +178,17 @@
             this.pctbxPlayer2BombAvailable.TabIndex = 9;
             this.pctbxPlayer2BombAvailable.TabStop = false;
             // 
+            // lblTurnTimeDisplay
+            // 
+            this.lblTurnTimeDisplay.AutoSize = true;
+            this.lblTurnTimeDisplay.BackColor = System.Drawing.Color.Transparent;
+            this.lblTurnTimeDisplay.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblTurnTimeDisplay.Location = new System.Drawing.Point(607, 14);
+            this.lblTurnTimeDisplay.Name = "lblTurnTimeDisplay";
+            this.lblTurnTimeDisplay.Size = new System.Drawing.Size(41, 20);
+            this.lblTurnTimeDisplay.TabIndex = 10;
+            this.lblTurnTimeDisplay.Text = "(30)";
+            // 
             // MinesweeperFlags
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -182,6 +196,7 @@
             this.BackgroundImage = global::Minesweeper_Initial_Dev_Assignment.Properties.Resources.BACKGROUND;
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.ClientSize = new System.Drawing.Size(843, 656);
+            this.Controls.Add(this.lblTurnTimeDisplay);
             this.Controls.Add(this.pctbxPlayer2BombAvailable);
             this.Controls.Add(this.pctbxPlayer1BombAvailable);
             this.Controls.Add(this.lblPlayerTurn);
@@ -195,6 +210,7 @@
             this.Name = "MinesweeperFlags";
             this.Text = "Minesweeper Flags";
             this.Load += new System.EventHandler(this.MinesweeperFlags_Load);
+            this.Shown += new System.EventHandler(this.MinesweeperFlags_Shown);
             ((System.ComponentModel.ISupportInitialize)(this.pctbxPlayer1BombAvailable)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pctbxPlayer2BombAvailable)).EndInit();
             this.ResumeLayout(false);
@@ -213,6 +229,8 @@
         private System.Windows.Forms.Label lblPlayerTurn;
         private System.Windows.Forms.PictureBox pctbxPlayer1BombAvailable;
         private System.Windows.Forms.PictureBox pctbxPlayer2BombAvailable;
+        private System.Windows.Forms.Timer tmrTurnTimer;
+        private System.Windows.Forms.Label lblTurnTimeDisplay;
     }
 }
 
