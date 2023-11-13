@@ -45,8 +45,8 @@ namespace Minesweeper_Initial_Dev_Assignment
 
         //Player variables
         public int turnPlayer = 1;
-        public Player player1 = new Player("Player 1", Color.Red, FLAG_RED);
-        public Player player2 = new Player("Player 2", Color.Blue, FLAG_BLUE);
+        public Player player1 = new Player(Color.Red, FLAG_RED);
+        public Player player2 = new Player(Color.Blue, FLAG_BLUE);
 
 
 
@@ -572,14 +572,12 @@ namespace Minesweeper_Initial_Dev_Assignment
         //Player class, for managing player values such as flags, images and bomb status
         public int flags;
         public bool hasBombed = false;
-        public string name = string.Empty;
         public Color color = Color.Gray;
         public Image flagImage = null;
 
-        public Player(string name, Color color, Image flagImage)
+        public Player(Color color, Image flagImage)
         {
             //Initialise Player class
-            this.name = name;
             this.color = color;
             this.flagImage = flagImage;
         }
