@@ -140,10 +140,11 @@
             this.lblMineCount.BackColor = System.Drawing.Color.Transparent;
             this.lblMineCount.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblMineCount.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.lblMineCount.Location = new System.Drawing.Point(99, 313);
-            this.lblMineCount.MaximumSize = new System.Drawing.Size(75, 0);
+            this.lblMineCount.Location = new System.Drawing.Point(94, 313);
+            this.lblMineCount.MaximumSize = new System.Drawing.Size(80, 32);
+            this.lblMineCount.MinimumSize = new System.Drawing.Size(80, 32);
             this.lblMineCount.Name = "lblMineCount";
-            this.lblMineCount.Size = new System.Drawing.Size(75, 32);
+            this.lblMineCount.Size = new System.Drawing.Size(80, 32);
             this.lblMineCount.TabIndex = 6;
             this.lblMineCount.Text = "51 mines remaining";
             // 
