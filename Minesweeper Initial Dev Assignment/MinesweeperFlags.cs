@@ -20,7 +20,7 @@ namespace Minesweeper_Initial_Dev_Assignment
         public bool boardFilled = false;
         public int boardRows = 0;
         public int boardCols = 0;
-        public int mineCount = 51;
+        public int mineCount = 71;
 
         public List<int> clearedCells = new List<int>();
 
@@ -54,15 +54,17 @@ namespace Minesweeper_Initial_Dev_Assignment
         {
             InitializeComponent();
 
+            //Setup turn timer tick interval
             tmrTurnTimer.Interval = 1000;
 
+            //Setup turn timer duration, and add the Tick event
             timeLeft = 30;
             tmrTurnTimer.Tick += Timer_Tick;
         }
 
         private void MinesweeperFlags_Load(object sender, EventArgs e)
         {
-            //Sets some variables
+            //Sets the global row/col variables
             boardRows = tblpnlMineBoard.RowCount;
             boardCols = tblpnlMineBoard.ColumnCount;
 
@@ -70,7 +72,7 @@ namespace Minesweeper_Initial_Dev_Assignment
             for (int i = 0; i < boardRows; i++)
             {
                 for (int j = 0; j < boardCols; j++) {
-                    //Sets up pictureboxes
+                    //Sets up pictureboxes with correct sizing/padding
                     var cell = new PictureBox();
 
                     cell.Dock = DockStyle.Top;
@@ -80,10 +82,10 @@ namespace Minesweeper_Initial_Dev_Assignment
                     cell.BackgroundImageLayout = ImageLayout.Stretch;
                     cell.BackgroundImage = TILE;
 
-                    //Add mouse event handlers
+                    //Add mouse event handlers to mouseclick event
                     cell.MouseClick += new MouseEventHandler(Cell_Click);
 
-                    //Place image at coord
+                    //Place the picturebox at the location
                     tblpnlMineBoard.Controls.Add(cell, j, i);
                 }
             }
@@ -91,18 +93,25 @@ namespace Minesweeper_Initial_Dev_Assignment
 
         private void MinesweeperFlags_Shown(Object sender, EventArgs e)
         {
+            //This event is only called once, the first time the form is shown to the user.
+            lblPlayerTurn.ForeColor = getPlayer(turnPlayer).color;
+            lblTurnTimeDisplay.ForeColor = getPlayer(turnPlayer).color;
             MessageBox.Show("Welcome to Minesweeper Flags! This is a two-player minesweeper game, where you take turns to clear the board and place flags. Whoever marks the most mines wins!");
             MessageBox.Show("If you have less flags than your opponent, you can use the one-time only \"Bomb\" action, to automatically clear a 3x3 area.");
             MessageBox.Show("Your turn ends when you Bomb an area, clear a non-mine space, or run out of time! You have 30 seconds per turn.");
             MessageBox.Show("Controls:\nLeft mouse button - Uncover a tile/Flag a mine\nRight mouse button - Use the Bomb action");
+            //After the instructions have been read, we start the timer.
             tmrTurnTimer.Start();
         }
 
         public void Timer_Tick(object sender, EventArgs e)
         {
+            //Timer tick event
+            //Decrements the timer, and updates the timer display.
             timeLeft--;
             lblTurnTimeDisplay.Text = "(" + timeLeft + ")";
 
+            //If we hit 0, we stop the timer and skip to the next player.
             if (timeLeft <= 0)
             {
                 tmrTurnTimer.Stop();
@@ -112,14 +121,17 @@ namespace Minesweeper_Initial_Dev_Assignment
 
         public void ResetTimer()
         {
+            //This function resets the timer, then restarts it
             timeLeft = 30;
             tmrTurnTimer.Start();
         }
 
         public bool CheckForWin() {
+            //After every flag placement, we check to see if it is possible for the losing player to regain a winning position.
+            //If it is impossible, then we consider the leading player to have won.
+            //This is found by seeing whether the difference between the two scores is bigger than the number of remaining mines. 
             if(player1.flags > player2.flags)
             { 
-                var leadingPlayer = player1 as Player;
                 var difference = player1.flags - player2.flags;
                 if (mineCount < difference)
                 {
@@ -128,7 +140,6 @@ namespace Minesweeper_Initial_Dev_Assignment
             }
             else
             { 
-                var leadingPlayer = player2 as Player;
                 var difference = player2.flags - player1.flags;
                 if (mineCount < difference)
                 {
@@ -144,19 +155,23 @@ namespace Minesweeper_Initial_Dev_Assignment
         
         private void EndGame()
         {
+            //This is our end game function.
+            //Stops the timer
             tmrTurnTimer.Stop();
+            //Then checks to see who has won, and shows a messagebox
             if (player1.flags > player2.flags)
             {
                 MessageBox.Show($"Player 1 wins!\nScore was {player1.flags}-{player2.flags}");
             }
             else { MessageBox.Show($"Player 2 wins!\nScore was {player1.flags}-{player2.flags}"); }
+            //Once the messagebox is closed, we close the application.
             Application.Exit();
 
         }
 
         private void IncrementFlags()
         {
-            //Increments flags and updates scoring
+            //Increments flags and updates scoring display
             getPlayer(turnPlayer).flags++;
             if (turnPlayer == 1)
             {
@@ -167,7 +182,7 @@ namespace Minesweeper_Initial_Dev_Assignment
                 lblPlayer2Flags.Text = Convert.ToString(getPlayer(turnPlayer).flags);
             }
 
-            //Check if current player can bomb and update accordingly
+            //Check if current player can bomb and update display accordingly
             if (getPlayer(1).canBomb(getPlayer(2)))
             {
                 pctbxPlayer1BombAvailable.BackgroundImage = BOMB;
@@ -177,7 +192,7 @@ namespace Minesweeper_Initial_Dev_Assignment
                 pctbxPlayer1BombAvailable.BackgroundImage = null;
             }
 
-            //Check if enemy can bomb and update accordingly
+            //Check if opponent can bomb and update displau accordingly
             if (getPlayer(2).canBomb(getPlayer(1)))
             {
                 pctbxPlayer2BombAvailable.BackgroundImage = BOMB;
@@ -187,9 +202,10 @@ namespace Minesweeper_Initial_Dev_Assignment
                 pctbxPlayer2BombAvailable.BackgroundImage = null;
             }
 
+            //Finally, we decrement the counter for number of total mines and update the corresponding display.
             mineCount--;
             lblMineCount.Text = $"{mineCount} mines remaining";
-            if (CheckForWin()) { EndGame(); }
+            if (CheckForWin()) { EndGame(); } //If there is a winner, we call the endgame function
         }
 
 
@@ -198,7 +214,7 @@ namespace Minesweeper_Initial_Dev_Assignment
             //Filling mine board with mines, and creating numbers
             List<List<int>> mineBoard = new List<List<int>>() { };
 
-            List<List<int>> cells = new List<List<int>>();
+            List<Tuple<int, int>> cells = new List<Tuple<int, int>>();
 
             //Make list of possible cell locations
             for (int i = 0; i < boardRows; i++)
@@ -209,9 +225,8 @@ namespace Minesweeper_Initial_Dev_Assignment
                 {
                     mineBoard[i].Add(0);
 
-                    //Skips first clicked cell
-                    if (i == cellRow && j == cellCol) { continue; }
-                    cells.Append(new List<int> { i, j });
+                    if(i==cellRow && j==cellCol) { continue; }
+                    cells.Add(new Tuple<int, int>(i,j));
                 }
                 
             }
@@ -221,8 +236,10 @@ namespace Minesweeper_Initial_Dev_Assignment
 
             for (int k = 0; k < mineCount; k++)
             {
-                int row = rnd.Next(1, boardRows);
-                int col = rnd.Next(1, boardCols);
+                var coordNum = rnd.Next(0, cells.Count);
+                Tuple<int,int> coord = cells[coordNum];
+                int row = coord.Item1 ;
+                int col = coord.Item2;
 
                 //Prevent stacked mines
                 if (mineBoard[row][col] == -1)
@@ -232,6 +249,8 @@ namespace Minesweeper_Initial_Dev_Assignment
                 }
 
                 mineBoard[row][col] = -1;
+                cells.RemoveAt(coordNum);
+
 
                 //Increment surrounding tiles (for numbers)
                 for (int i = -1; i <= 1; i++) {
@@ -258,7 +277,7 @@ namespace Minesweeper_Initial_Dev_Assignment
                 outputString += "\n";
             }
             Console.WriteLine(outputString);
-               
+            
             boardFilled = true;
             return mineBoard;
         }
@@ -280,7 +299,7 @@ namespace Minesweeper_Initial_Dev_Assignment
         }
 
         private void NextPlayer() {
-            //Switches to the next turn and updates display accordingly
+            //Changes to the next player
             switch (turnPlayer)
             {
                 case 1:
@@ -293,31 +312,40 @@ namespace Minesweeper_Initial_Dev_Assignment
                     MessageBox.Show("nextPlayer error");
                     break;
             }
+            //Update display to show the current turn player
             lblPlayerTurn.Text = $"Player {turnPlayer}'s turn";
+            lblPlayerTurn.ForeColor = getPlayer(turnPlayer).color;
+            lblTurnTimeDisplay.ForeColor = getPlayer(turnPlayer).color;
+            //Stop the timer
+            lblTurnTimeDisplay.Text = "(30)";
             tmrTurnTimer.Stop();
+            //Messagebox to let players know of the turn change
             MessageBox.Show($"Player {turnPlayer}'s turn");
+            //Once Msgbox is closed, we reset the timer
             ResetTimer();
             
         }
 
         private void Cell_Click(object sender, MouseEventArgs e)
         {
+            //This event is called when a cell is clicked
             PictureBox cell = sender as PictureBox;
-            int rowNum = tblpnlMineBoard.GetRow(cell);
-            int colNum = tblpnlMineBoard.GetColumn(cell);
 
-            // handle click event
+            // Find which button was pressed
             if (e.Button == MouseButtons.Left)
             {
+                //If left click, we call the clearing function
                 actionMineClear(cell);
             }
             else if (e.Button == MouseButtons.Right)
             {
-                //BOMB
+                //If right click, we check whether bombing is an option
                 if(getPlayer(turnPlayer).canBomb(getPlayer(turnPlayer, true)))
                 {
+                    //Then run the bomb function on the cell, and set the player's hasBombed value to true
                     actionBomb(cell);
                     getPlayer(turnPlayer).hasBombed = true;
+                    //Bombing automaticaly switches to the next player.
                     NextPlayer();
                 }
             }
@@ -325,6 +353,7 @@ namespace Minesweeper_Initial_Dev_Assignment
 
         private void actionMineClear(PictureBox cell)
         {
+            //First we get our row and column
             var cellRow = tblpnlMineBoard.GetRow(cell);
             var cellCol = tblpnlMineBoard.GetColumn(cell);
 
@@ -332,20 +361,28 @@ namespace Minesweeper_Initial_Dev_Assignment
             //passes first tiled clicked to ensure no instant flagging
             if (boardFilled != true) { board = generateMineBoard(mineCount, cellRow, cellCol); }
 
+            //We first check that the cell hasn't already been cleared
             if (!IsCellCleared(cellRow, cellCol))
             {
+                //Then we check what the tile is
                 switch (board[cellRow][cellCol])
                 {
                     case -1:
                         //MINE
-                        IncrementFlags();
+                        //get the player's flag image
                         cell.BackgroundImage = getPlayer(turnPlayer).flagImage;
+                        //add the index to the clearedCells list
                         clearedCells.Add(cellRow * boardCols + cellCol);
+                        //call incrementFlags
+                        IncrementFlags();
                         break;
                     case 0:
                         //EMPTY
+                        //first place the 0 on the board
                         PlaceNumber(cellRow, cellCol, 0);
+                        //then call the recursive ClearSurroundings function
                         ClearSurroundings(cellRow, cellCol);
+                        //then go to next player
                         NextPlayer();
                         break;
                     case 1:
@@ -357,8 +394,11 @@ namespace Minesweeper_Initial_Dev_Assignment
                     case 7:
                     case 8:
                         //NUMBERS
+                        //place our number
                         PlaceNumber(cellRow, cellCol, board[cellRow][cellCol]);
+                        //add to cleared cells
                         clearedCells.Add(cellRow * boardCols + cellCol);
+                        //go to next player
                         NextPlayer();
                         break;
                     default:
@@ -370,35 +410,39 @@ namespace Minesweeper_Initial_Dev_Assignment
 
         private void actionBomb(PictureBox cell)
         {
-            MessageBox.Show("BOOM!");
+            //get row and col
             var cellRow = tblpnlMineBoard.GetRow(cell);
             var cellCol = tblpnlMineBoard.GetColumn(cell);
 
+            //loop through cell and surrounding cells
             for (int i = -1; i <= 1; i++)
             {
                 for (int j = -1; j <= 1; j++)
                 {
+                    //find the new location
                     var newRow = cellRow + i;
                     var newCol = cellCol + j;
-                    Console.WriteLine($"{i}, {j}");
+                    //if it hasn't been cleared
                     if (!IsCellCleared(newRow, newCol))
                     {
-                        Console.WriteLine($"Cell not cleared");
+                        //if it is also in the board's range
                         if (CellInBoardRange(newRow, newCol))
                         {
-                            Console.WriteLine("Cell in range");
-                            Console.WriteLine("Cell is:"+board[cellRow][newCol]);
+                            //perform the right action
                             switch (board[newRow][newCol])
                             {
                                 case -1:
                                     //MINE
-                                    IncrementFlags();
+                                    //auto places flags on mines
                                     cell = tblpnlMineBoard.Controls[boardCols * newRow + newCol] as PictureBox;
                                     cell.BackgroundImage = getPlayer(turnPlayer).flagImage;
+                                    //adds to cleared cells then increments flags
                                     clearedCells.Add(newRow * boardCols + newCol);
+                                    IncrementFlags();
                                     break;
                                 case 0:
                                     //EMPTY
+                                    //calls clearSurroundings on 0s
                                     PlaceNumber(newRow, newCol, 0);
                                     ClearSurroundings(newRow, newCol);
                                     break;
@@ -411,6 +455,7 @@ namespace Minesweeper_Initial_Dev_Assignment
                                 case 7:
                                 case 8:
                                     //NUMBERS
+                                    //places number and adds to cleared cells
                                     PlaceNumber(newRow, newCol, board[newRow][newCol]);
                                     clearedCells.Add(newRow * boardCols + newCol);
                                     break;
@@ -426,6 +471,8 @@ namespace Minesweeper_Initial_Dev_Assignment
 
         private void ClearSurroundings(int cellRow, int cellCol)
         {
+            //Recursive function
+            //loops through surrounding cells
             for (int i = -1; i <= 1; i++)
             {
                 for (int j = -1; j <= 1; j++)
@@ -433,18 +480,26 @@ namespace Minesweeper_Initial_Dev_Assignment
                     var newRow = cellRow + i;
                     var newCol = cellCol + j;
 
+                    //doesn't recurse deeper if the cell has already been cleared
                     if (!IsCellCleared(newRow, newCol))
-                    {   if (CellInBoardRange(newRow, newCol))
+                    {   //or if the new location is out of range
+                        if (CellInBoardRange(newRow, newCol))
                         { 
-                            Console.WriteLine(board[newRow][newCol]);
+                            //the recursive function is only called from a 0, which only appears if no surrounding cells are mines
+                            //this means we don't have to check for mines, and only need check for 0s and 1-8
                             if (board[newRow][newCol] == 0)
                             {
+                                //if we have another 0, we add the location to the cleared cells and place our 0
+                                //before recursing
                                 clearedCells.Add(newRow*boardCols +newCol);
                                 PlaceNumber(newRow, newCol, 0);
                                 ClearSurroundings(newRow, newCol);
 
                             }
-                            else { PlaceNumber(newRow, newCol, board[newRow][newCol]); }
+                            else {
+                                //otherwise we add to cleared cells and just place the number
+                                clearedCells.Add(newRow * boardCols + newCol); 
+                                PlaceNumber(newRow, newCol, board[newRow][newCol]); }
                         }
                     }
                 }
@@ -508,11 +563,13 @@ namespace Minesweeper_Initial_Dev_Assignment
 
         private bool IsCellCleared(int cellRow, int cellCol)
         {
+            //Checks whether the index is in the clearedCells list, from a given col/row
             return clearedCells.Contains(cellRow * boardCols + cellCol);
         }
     }
     public class Player
     {
+        //Player class, for managing player values such as flags, images and bomb status
         public int flags;
         public bool hasBombed = false;
         public string name = string.Empty;
@@ -521,6 +578,7 @@ namespace Minesweeper_Initial_Dev_Assignment
 
         public Player(string name, Color color, Image flagImage)
         {
+            //Initialise Player class
             this.name = name;
             this.color = color;
             this.flagImage = flagImage;
@@ -528,6 +586,8 @@ namespace Minesweeper_Initial_Dev_Assignment
 
         public bool canBomb(Player opponent)
         {
+            //returns whether the player can bomb
+            //to be able to bomb, the player must have less flags than their opponent and have not bombed already.
             if (!hasBombed && this.flags < opponent.flags)
             {
                 return true;
@@ -537,33 +597,3 @@ namespace Minesweeper_Initial_Dev_Assignment
     }
 
 }
-
-
-
-
-
-
-
-
-
-/*
- 
-func mineClearing {
-    if on clear list: ignore click
-    else:
-        if mine: place flag, increment flag counter, add to clear list
-        if number: reveal number, add to clear list, pass turn
-        if 0: call clearSurroundings(cellRow, cellCol), pass turn
-} 
-
-func clearSurroundings(cellRow, cellCol) {
-    place 0
-    add to clear list
-    
-    for surrounding cells:
-        if cell not in clear list:
-            if number: place number, add to clear list
-            if 0: clearSurroundings(cellRow+mod, cellCol+mod)
-}
-
- */
