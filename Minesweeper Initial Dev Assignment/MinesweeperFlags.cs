@@ -13,6 +13,7 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement.Header;
 
 namespace Minesweeper_Initial_Dev_Assignment
 {
+    //Game
     public partial class MinesweeperFlags : Form
     {
         //Setup board variables
@@ -49,7 +50,7 @@ namespace Minesweeper_Initial_Dev_Assignment
         public Player player2 = new Player(Color.Blue, FLAG_BLUE);
 
 
-
+        //Form functions
         public MinesweeperFlags()
         {
             InitializeComponent();
@@ -104,6 +105,8 @@ namespace Minesweeper_Initial_Dev_Assignment
             tmrTurnTimer.Start();
         }
 
+
+        //Timer functions
         public void Timer_Tick(object sender, EventArgs e)
         {
             //Timer tick event
@@ -124,6 +127,47 @@ namespace Minesweeper_Initial_Dev_Assignment
             //This function resets the timer, then restarts it
             timeLeft = 30;
             tmrTurnTimer.Start();
+        }
+
+
+        //Flags and win checking
+        private void IncrementFlags()
+        {
+            //Increments flags and updates scoring display
+            getPlayer(turnPlayer).flags++;
+            if (turnPlayer == 1)
+            {
+                lblPlayer1Flags.Text = Convert.ToString(getPlayer(turnPlayer).flags);
+            }
+            else
+            {
+                lblPlayer2Flags.Text = Convert.ToString(getPlayer(turnPlayer).flags);
+            }
+
+            //Check if current player can bomb and update display accordingly
+            if (getPlayer(1).canBomb(getPlayer(2)))
+            {
+                pctbxPlayer1BombAvailable.BackgroundImage = BOMB;
+            }
+            else
+            {
+                pctbxPlayer1BombAvailable.BackgroundImage = null;
+            }
+
+            //Check if opponent can bomb and update displau accordingly
+            if (getPlayer(2).canBomb(getPlayer(1)))
+            {
+                pctbxPlayer2BombAvailable.BackgroundImage = BOMB;
+            }
+            else
+            {
+                pctbxPlayer2BombAvailable.BackgroundImage = null;
+            }
+
+            //Finally, we decrement the counter for number of total mines and update the corresponding display.
+            mineCount--;
+            lblMineCount.Text = $"{mineCount} mines remaining";
+            if (CheckForWin()) { EndGame(); } //If there is a winner, we call the endgame function
         }
 
         public bool CheckForWin() {
@@ -169,46 +213,7 @@ namespace Minesweeper_Initial_Dev_Assignment
 
         }
 
-        private void IncrementFlags()
-        {
-            //Increments flags and updates scoring display
-            getPlayer(turnPlayer).flags++;
-            if (turnPlayer == 1)
-            {
-                lblPlayer1Flags.Text = Convert.ToString(getPlayer(turnPlayer).flags);
-            }
-            else
-            {
-                lblPlayer2Flags.Text = Convert.ToString(getPlayer(turnPlayer).flags);
-            }
-
-            //Check if current player can bomb and update display accordingly
-            if (getPlayer(1).canBomb(getPlayer(2)))
-            {
-                pctbxPlayer1BombAvailable.BackgroundImage = BOMB;
-            }
-            else
-            {
-                pctbxPlayer1BombAvailable.BackgroundImage = null;
-            }
-
-            //Check if opponent can bomb and update displau accordingly
-            if (getPlayer(2).canBomb(getPlayer(1)))
-            {
-                pctbxPlayer2BombAvailable.BackgroundImage = BOMB;
-            }
-            else
-            {
-                pctbxPlayer2BombAvailable.BackgroundImage = null;
-            }
-
-            //Finally, we decrement the counter for number of total mines and update the corresponding display.
-            mineCount--;
-            lblMineCount.Text = $"{mineCount} mines remaining";
-            if (CheckForWin()) { EndGame(); } //If there is a winner, we call the endgame function
-        }
-
-
+        //Board functions
         private List<List<int>> generateMineBoard(int mineCount, int cellRow, int cellCol)
         {
             //Filling mine board with mines, and creating numbers
@@ -282,6 +287,26 @@ namespace Minesweeper_Initial_Dev_Assignment
             return mineBoard;
         }
 
+        private bool CellInBoardRange(int row, int col)
+        {
+            //Checks whether given coord is in range of the grid
+            if (row >= 0 && col >= 0 && row < boardRows && col < boardCols)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            };
+        }
+
+        private bool IsCellCleared(int cellRow, int cellCol)
+        {
+            //Checks whether the index is in the clearedCells list, from a given col/row
+            return clearedCells.Contains(cellRow * boardCols + cellCol);
+        }
+
+        //Player functions
         private Player getPlayer(int player, bool getOpponent=false) {
             //Returns the current turn player object (or opponent if getOpponent is true)
             switch (player)
@@ -326,6 +351,7 @@ namespace Minesweeper_Initial_Dev_Assignment
             
         }
 
+        //Click events and related
         private void Cell_Click(object sender, MouseEventArgs e)
         {
             //This event is called when a cell is clicked
@@ -506,9 +532,6 @@ namespace Minesweeper_Initial_Dev_Assignment
             }
         }
 
-        
-
-
         private void PlaceNumber(int cellRow, int cellCol, int number)
         {
             //Get cell index
@@ -549,24 +572,9 @@ namespace Minesweeper_Initial_Dev_Assignment
                     break;
             }
         }
-
-        private bool CellInBoardRange(int row, int col) {
-            //Checks whether given coord is in range of the grid
-            if (row >= 0 && col >= 0 && row < boardRows && col < boardCols)
-            {
-                return true;
-            } else
-            {
-                return false;
-            };
-        }
-
-        private bool IsCellCleared(int cellRow, int cellCol)
-        {
-            //Checks whether the index is in the clearedCells list, from a given col/row
-            return clearedCells.Contains(cellRow * boardCols + cellCol);
-        }
     }
+
+    //Player class
     public class Player
     {
         //Player class, for managing player values such as flags, images and bomb status
