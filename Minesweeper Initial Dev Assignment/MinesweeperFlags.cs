@@ -121,7 +121,7 @@ namespace Minesweeper_Initial_Dev_Assignment
             { 
                 var leadingPlayer = player1 as Player;
                 var difference = player1.flags - player2.flags;
-                if (mineCount < difference + 1)
+                if (mineCount < difference)
                 {
                     return true;
                 }
@@ -130,7 +130,7 @@ namespace Minesweeper_Initial_Dev_Assignment
             { 
                 var leadingPlayer = player2 as Player;
                 var difference = player2.flags - player1.flags;
-                if (mineCount < difference + 1)
+                if (mineCount < difference)
                 {
                     return true;
                 }
