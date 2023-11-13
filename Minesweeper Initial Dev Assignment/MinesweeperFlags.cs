@@ -21,7 +21,7 @@ namespace Minesweeper_Initial_Dev_Assignment
         public bool boardFilled = false;
         public int boardRows = 0;
         public int boardCols = 0;
-        public int mineCount = 71;
+        public int mineCount = 51;
 
         public List<int> clearedCells = new List<int>();
 
